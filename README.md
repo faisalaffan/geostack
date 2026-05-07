@@ -76,17 +76,51 @@ https://github.com/user-attachments/assets/placeholder
 git clone git@github.com:faisalaffan/geostack.git
 cd geostack
 
-# Configure environment
+# One-command setup (install + start + migrate)
+make setup
+
+# Or step by step
 cp .env.example .env
-
-# Start all 8 services
-docker compose up -d
-
-# Run database migrations
-docker compose exec api npm run db:migrate
+make up
+make db-migrate
 ```
 
 Open **http://localhost:5173** and login with the dev mode button, or **http://localhost:8081/admin** for Keycloak admin (`admin` / `admin`).
+
+### Makefile Commands
+
+```bash
+make help          # Show all available commands
+
+# Infrastructure
+make up            # Start all 8 services
+make down          # Stop all services
+make logs          # Tail all logs
+make ps            # Show service status
+
+# Database
+make db-migrate    # Run migrations
+make db-reset      # Reset and re-migrate (dev)
+make db-psql       # Open psql console
+
+# Development
+make backend-dev   # Backend dev server
+make frontend-dev  # Frontend dev server
+make test          # Run all tests
+make typecheck     # TypeScript check everything
+make ci            # Full CI check (type + test)
+
+# Docker
+make docker-build  # Build API + Web images
+
+# Kubernetes
+make k8s-apply     # Apply all manifests
+make k8s-delete    # Delete all resources
+make k8s-status    # Show cluster status
+
+# Cleanup
+make clean         # Remove containers, volumes, node_modules
+```
 
 ### Demo Credentials
 
