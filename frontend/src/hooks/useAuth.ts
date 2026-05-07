@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import keycloak from '../lib/keycloak';
-import { api } from '../lib/api';
+import { setApiToken } from '../lib/api';
 
 interface UserInfo {
   id: string;
@@ -26,18 +26,32 @@ export function useAuth(): AuthState {
   const [user, setUser] = useState<UserInfo | null>(null);
   const [token, setToken] = useState<string | null>(null);
 
+  const exchangeToken = useCallback(async () => {
+    try {
+      const res = await fetch('/api/v1/auth/login');
+      const data = await res.json();
+      const backendToken = data.token;
+      setToken(backendToken);
+      setApiToken(backendToken);
+      return backendToken;
+    } catch (err) {
+      console.error('Token exchange failed:', err);
+      return null;
+    }
+  }, []);
+
   useEffect(() => {
     keycloak
       .init({ onLoad: 'check-sso', silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html' })
-      .then((authenticated) => {
+      .then(async (authenticated) => {
         setIsAuthenticated(authenticated);
-        if (authenticated && keycloak.token) {
-          setToken(keycloak.token);
+        if (authenticated) {
+          await exchangeToken();
         }
       })
       .catch(console.error)
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [exchangeToken]);
 
   const login = useCallback(() => {
     keycloak.login();

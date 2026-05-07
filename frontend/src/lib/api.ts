@@ -12,8 +12,14 @@ class ApiError extends Error {
   }
 }
 
+let authToken: string | null = null;
+
+export function setApiToken(token: string | null) {
+  authToken = token;
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = keycloak.token;
+  const token = authToken || keycloak.token;
 
   const headers: Record<string, string> = {
     ...((options.headers as Record<string, string>) || {}),
