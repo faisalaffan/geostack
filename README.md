@@ -129,6 +129,7 @@ npx tsc --noEmit         # Type check
 | `DELETE` | `/api/v1/datasets/:id` | Delete dataset |
 | `GET` | `/api/v1/datasets/:id/features` | Query features (paginated) |
 | `POST` | `/api/v1/upload/:datasetId` | Upload file (multipart) |
+| `WS`  | `/api/v1/ws/etl/:datasetId` | ETL progress stream |
 | `GET` | `/api/v1/tiles/vector/:z/:x/:y` | Vector tile (Martin proxy) |
 | `GET` | `/api/v1/tiles/raster/:z/:x/:y` | Raster tile (TiTiler proxy) |
 | `*` | `/api/v1/geoserver/*` | GeoServer proxy (WMS/WFS) |
@@ -147,6 +148,28 @@ npx tsc --noEmit         # Type check
 | `MINIO_BUCKET` | `geostack-data` | Default S3 bucket |
 | `KEYCLOAK_ADMIN` | `admin` | Keycloak admin user |
 | `KEYCLOAK_ADMIN_PASSWORD` | `admin` | Keycloak admin password |
+
+## Kubernetes
+
+```bash
+# Apply all manifests
+kubectl apply -k k8s/
+
+# Or apply individually
+kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/
+```
+
+Access via `http://geostack.local` (requires NGINX Ingress Controller + `/etc/hosts` entry).
+
+## CI/CD
+
+GitHub Actions pipeline (`.github/workflows/ci.yml`):
+- **Backend** — Type check + test (with PostGIS service container)
+- **Frontend** — Type check + test
+- **Docker** — Build verification with BuildKit caching
+
+Dependabot configured for weekly updates on npm, Docker, and GitHub Actions.
 
 ## Resource Budget (4 GB VPS)
 
@@ -167,12 +190,13 @@ npx tsc --noEmit         # Type check
 - [x] Multi-tenant auth (Keycloak + JWT)
 - [x] Dataset CRUD with spatial metadata
 - [x] File upload & ETL pipeline (GDAL → PostGIS)
+- [x] Real-time ETL progress (WebSocket)
 - [x] Vector tile serving (Martin)
 - [x] Raster tile serving (TiTiler)
 - [x] OGC standards (GeoServer WMS/WFS)
 - [x] Interactive map viewer (MapLibre GL)
 - [x] Backend tests
 - [x] Frontend tests
-- [ ] Real-time ETL progress (WebSocket)
-- [ ] Kubernetes manifests
-- [ ] CI/CD pipeline
+- [x] Kubernetes manifests
+- [x] CI/CD pipeline (GitHub Actions)
+- [ ] Live deployment URL
