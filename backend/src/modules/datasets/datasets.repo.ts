@@ -59,7 +59,8 @@ export async function queryFeatures(
   client: PoolClient, schema: string, datasetId: string, limit = 50, offset = 0,
 ) {
   const result = await client.query(
-    `SELECT id, name, ST_AsGeoJSON(geom)::json as geometry, properties
+    `SELECT id, COALESCE(name, properties->>'name', '') as name,
+        ST_AsGeoJSON(geom)::json as geometry, properties
      FROM ${schema}.layers WHERE dataset_id = $1
      ORDER BY id LIMIT $2 OFFSET $3`,
     [datasetId, limit, offset],
@@ -68,6 +69,6 @@ export async function queryFeatures(
     id: row.id,
     type: 'Feature',
     geometry: row.geometry,
-    properties: { name: row.name, ...row.properties },
+    properties: { name: row.name || '', ...(row.properties || {}) },
   }));
 }
