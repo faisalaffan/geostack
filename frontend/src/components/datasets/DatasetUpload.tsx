@@ -26,9 +26,7 @@ export function DatasetUpload({ datasetId, onDone }: Props) {
 
   const connectProgress = () => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-    const wsUrl = API_BASE.replace(/^https?/, protocol);
-    const ws = new WebSocket(`${wsUrl}/api/v1/ws/etl/${datasetId}`);
+    const ws = new WebSocket(`${protocol}//${window.location.host}/api/v1/ws/etl/${datasetId}`);
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data) as EtlProgress;
