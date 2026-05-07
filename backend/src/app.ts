@@ -7,8 +7,8 @@ import { Config } from './config.js';
 import { getPool, closePool } from './db/pool.js';
 import { ensureBucket, getS3 } from './lib/s3.js';
 import { AppError } from './lib/errors.js';
-import { tenantPlugin } from './plugins/tenant.js';
-import { authPlugin } from './plugins/auth.js';
+import tenantPlugin from './plugins/tenant.js';
+import authPlugin from './plugins/auth.js';
 import { authRoutes } from './modules/auth/auth.routes.js';
 import { datasetRoutes } from './modules/datasets/datasets.routes.js';
 import { uploadRoutes } from './modules/upload/upload.routes.js';
@@ -16,6 +16,7 @@ import { tileRoutes } from './modules/tiles/tiles.routes.js';
 
 export async function buildApp(config: Config) {
   const app = Fastify({ logger: { transport: { target: 'pino-pretty' } } });
+  app.decorate('config', config);
 
   // Init connections
   getPool(config);

@@ -1,5 +1,14 @@
 import { FastifyRequest } from 'fastify';
 
+interface JwtPayload {
+  sub: string;
+  realm_access?: { roles: string[] };
+  org_id?: string;
+  org_slug?: string;
+  preferred_username?: string;
+  email?: string;
+}
+
 interface UserInfo {
   id: string;
   username: string;
@@ -10,7 +19,7 @@ interface UserInfo {
 }
 
 export function getUserFromToken(request: FastifyRequest): UserInfo {
-  const user = request.user;
+  const user = request.user as JwtPayload;
   return {
     id: user.sub,
     username: user.preferred_username || '',

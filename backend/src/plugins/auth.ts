@@ -16,14 +16,7 @@ interface JwtPayload {
   email?: string;
 }
 
-declare module 'fastify' {
-  interface FastifyRequest {
-    user: JwtPayload;
-  }
-}
-
 async function authPlugin(app: FastifyInstance, opts: AuthPluginOptions) {
-  app.decorateRequest('user', null as any);
 
   app.addHook('onRequest', async (request: FastifyRequest, reply: FastifyReply) => {
     if (request.url === '/health' || request.url === '/api/v1/auth/login') {
