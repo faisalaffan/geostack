@@ -60,20 +60,41 @@ export async function runEtl(
     progress('validating', 30);
     await execFileP('ogrinfo', ['-so', tmpFile]);
 
-    // Transform & load via ogr2ogr
+    // Transform & load via ogr2ogr — first into staging, then merge
     progress('transforming', 50);
+    const stagingTable = `${schema}.layers_staging`;
+
+    // Drop staging if exists and import
+    await pool.query(`DROP TABLE IF EXISTS ${stagingTable}`);
+
     await execFileP('ogr2ogr', [
       '-f', 'PostgreSQL',
       parseDbUrl(config.DATABASE_URL),
       tmpFile,
-      '-nln', `${schema}.layers`,
+      '-nln', stagingTable,
       '-lco', 'GEOMETRY_NAME=geom',
-      '-lco', 'FID=id',
       '-t_srs', 'EPSG:4326',
-      '-overwrite',
       '-nlt', 'GEOMETRY',
       '--config', 'PG_USE_COPY', 'YES',
     ]);
+
+    // Merge staging into layers: map staging columns → layers columns
+    // ogr2ogr puts GeoJSON properties as columns; we store them in JSONB
+    const columns = await pool.query(
+      `SELECT column_name FROM information_schema.columns WHERE table_schema = $1 AND table_name = 'layers_staging'`,
+      [schema],
+    );
+    const colNames = columns.rows.map((r: any) => r.column_name);
+    const propCols = colNames.filter((c: string) => !['ogc_fid', 'geom', 'id'].includes(c));
+    const propsJson = propCols.map((c: string) => `'${c}', ${c}`).join(', ');
+
+    await pool.query(`
+      INSERT INTO ${schema}.layers (dataset_id, name, geom, properties)
+      SELECT $1, COALESCE(name, ''), geom, jsonb_strip_nulls(jsonb_build_object(${propsJson || "'_', ''"}))
+      FROM ${stagingTable}
+    `, [datasetId]);
+
+    await pool.query(`DROP TABLE IF EXISTS ${stagingTable}`);
 
     // Count features
     progress('finalizing', 90);
