@@ -9,7 +9,7 @@ export default defineConfig({
     allowedHosts: ['geostack.faisalaffan.com', '.faisalaffan.com', 'localhost'],
     proxy: {
       '/api': {
-        target: 'http://api:3000',
+        target: process.env.VITE_PROXY_TARGET || 'http://localhost:3000',
         changeOrigin: true,
       },
     },
