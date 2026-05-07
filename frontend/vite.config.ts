@@ -6,6 +6,7 @@ export default defineConfig({
   server: {
     host: true,
     port: 5173,
+    allowedHosts: ['geostack.faisalaffan.com', '.faisalaffan.com', 'localhost'],
     proxy: {
       '/api': {
         target: 'http://api:3000',
