@@ -3,13 +3,14 @@ import { Config } from '../../config.js';
 import { withTenantClient } from '../../db/pool.js';
 import * as datasetRepo from '../datasets/datasets.repo.js';
 import { NotFoundError } from '../../lib/errors.js';
-import { runEtl } from './etl.processor.js';
+import { runEtl, ProgressCallback } from './etl.processor.js';
 
 export async function handleUpload(
   request: FastifyRequest,
   datasetId: string,
   fileBuffer: Buffer,
   fileName: string,
+  onProgress?: ProgressCallback,
 ): Promise<{ jobId: string }> {
   const config = (request as any).server.config as Config;
 
@@ -18,7 +19,7 @@ export async function handleUpload(
     if (!ds) throw new NotFoundError('Dataset', datasetId);
   });
 
-  const result = await runEtl(config, request.tenantSlug, datasetId, fileBuffer, fileName);
+  const result = await runEtl(config, request.tenantSlug, datasetId, fileBuffer, fileName, onProgress);
 
   return { jobId: datasetId, ...result };
 }

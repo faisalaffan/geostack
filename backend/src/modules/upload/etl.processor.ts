@@ -7,6 +7,8 @@ import { uploadFile } from '../../lib/s3.js';
 
 const execFileP = promisify(execFile);
 
+export type ProgressCallback = (step: string, percent: number) => void;
+
 interface EtlResult {
   featureCount: number;
   storagePath: string;
@@ -18,10 +20,16 @@ export async function runEtl(
   datasetId: string,
   fileBuffer: Buffer,
   fileName: string,
+  onProgress?: ProgressCallback,
 ): Promise<EtlResult> {
   const schema = `tenant_${tenantSlug}`;
   const pool = getPool();
 
+  const progress = (step: string, percent: number) => {
+    onProgress?.(step, percent);
+  };
+
+  progress('validating', 10);
   await pool.query(
     `UPDATE ${schema}.datasets SET status = 'processing' WHERE id = $1`,
     [datasetId],
@@ -29,6 +37,7 @@ export async function runEtl(
 
   try {
     // Save raw file to MinIO
+    progress('uploading', 20);
     const rawPath = `raw/${tenantSlug}/${datasetId}/${fileName}`;
     const mimeType = fileName.endsWith('.json') || fileName.endsWith('.geojson')
       ? 'application/json'
@@ -42,9 +51,11 @@ export async function runEtl(
     writeFileSync(tmpFile, fileBuffer);
 
     // Validate
+    progress('validating', 30);
     await execFileP('ogrinfo', ['-so', tmpFile]);
 
     // Transform & load via ogr2ogr
+    progress('transforming', 50);
     await execFileP('ogr2ogr', [
       '-f', 'PostgreSQL',
       `PG:${config.DATABASE_URL}`,
@@ -59,6 +70,7 @@ export async function runEtl(
     ]);
 
     // Count features
+    progress('finalizing', 90);
     const countResult = await pool.query(
       `SELECT COUNT(*) as count FROM ${schema}.layers`,
     );
@@ -74,8 +86,11 @@ export async function runEtl(
 
     await execFileP('rm', ['-rf', tmpDir]);
 
+    progress('done', 100);
+
     return { featureCount, storagePath: rawPath };
   } catch (err: any) {
+    progress('error', 100);
     await pool.query(
       `UPDATE ${schema}.datasets SET status = 'error' WHERE id = $1`,
       [datasetId],

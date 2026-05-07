@@ -3,6 +3,7 @@ import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
 import multipart from '@fastify/multipart';
 import rateLimit from '@fastify/rate-limit';
+import websocket from '@fastify/websocket';
 import { Config } from './config.js';
 import { getPool, closePool } from './db/pool.js';
 import { ensureBucket, getS3 } from './lib/s3.js';
@@ -27,6 +28,7 @@ export async function buildApp(config: Config) {
   await app.register(cors, { origin: true, credentials: true });
   await app.register(jwt, { secret: process.env.JWT_SECRET || 'dev-secret-change-me' });
   await app.register(multipart, { limits: { fileSize: 100 * 1024 * 1024 } }); // 100MB
+  await app.register(websocket);
   await app.register(rateLimit, { max: 100, timeWindow: '1 minute' });
 
   // Custom plugins
