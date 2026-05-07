@@ -19,7 +19,11 @@ interface JwtPayload {
 async function authPlugin(app: FastifyInstance, opts: AuthPluginOptions) {
 
   app.addHook('onRequest', async (request: FastifyRequest, reply: FastifyReply) => {
-    if (request.url === '/health' || request.url === '/api/v1/auth/login') {
+    if (
+      request.url === '/health' ||
+      request.url === '/api/v1/auth/login' ||
+      request.url.startsWith('/api/v1/ws/')
+    ) {
       return;
     }
 
