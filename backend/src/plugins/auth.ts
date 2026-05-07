@@ -22,7 +22,9 @@ async function authPlugin(app: FastifyInstance, opts: AuthPluginOptions) {
     if (
       request.url === '/health' ||
       request.url === '/api/v1/auth/login' ||
-      request.url.startsWith('/api/v1/ws/')
+      request.url.startsWith('/api/v1/ws/') ||
+      request.url.startsWith('/api/v1/tiles/') ||
+      request.url.startsWith('/api/v1/geoserver/')
     ) {
       return;
     }
