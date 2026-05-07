@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import keycloak from '../lib/keycloak';
 import { api } from '../lib/api';
 
@@ -25,12 +25,8 @@ export function useAuth(): AuthState {
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<UserInfo | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const initRef = useRef(false);
 
   useEffect(() => {
-    if (initRef.current) return;
-    initRef.current = true;
-
     keycloak
       .init({ onLoad: 'check-sso', silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html' })
       .then((authenticated) => {
@@ -41,8 +37,6 @@ export function useAuth(): AuthState {
       })
       .catch(console.error)
       .finally(() => setIsLoading(false));
-
-    return () => { initRef.current = false; };
   }, []);
 
   const login = useCallback(() => {
