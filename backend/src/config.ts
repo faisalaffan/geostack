@@ -1,4 +1,11 @@
+import { existsSync } from 'node:fs';
+import { config as loadDotenv } from 'dotenv';
 import { z } from 'zod';
+
+// Load .env.local if running locally (not in Docker)
+if (existsSync('.env.local')) {
+  loadDotenv({ path: '.env.local', override: true });
+}
 
 const envSchema = z.object({
   DATABASE_URL: z.string(),

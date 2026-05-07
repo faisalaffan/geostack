@@ -11,16 +11,17 @@
     "db:migrate": "tsx src/db/migrate.ts"
   },
   "dependencies": {
-    "fastify": "^5.2.0",
-    "fastify-plugin": "^5.0.0",
     "@fastify/cors": "^10.0.0",
+    "@fastify/http-proxy": "^10.0.0",
     "@fastify/jwt": "^9.0.0",
     "@fastify/multipart": "^9.0.0",
-    "@fastify/websocket": "^11.2.0",
     "@fastify/rate-limit": "^10.0.0",
-    "@fastify/http-proxy": "^10.0.0",
-    "pg": "^8.13.0",
+    "@fastify/websocket": "^11.2.0",
+    "dotenv": "^17.4.2",
+    "fastify": "^5.2.0",
+    "fastify-plugin": "^5.0.0",
     "minio": "^8.0.0",
+    "pg": "^8.13.0",
     "pino": "^9.0.0",
     "pino-pretty": "^13.0.0",
     "zod": "^3.23.0"
@@ -28,12 +29,15 @@
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/pg": "^8.11.0",
+    "testcontainers": "^10.0.0",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0",
-    "vitest": "^3.0.0",
-    "testcontainers": "^10.0.0"
+    "vitest": "^3.0.0"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild"]
-  }
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+  "packageManager": "pnpm@10.33.2+sha512.a90faf6feeab71ad6c6e57f94e0fe1a12f5dcc22cd754db40ae9593eb6a3e0b6b12e3540218bb37ae083404b1f2ce6db2a4121e979829b4aff94b99f49da1cf8"
 }
