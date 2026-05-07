@@ -43,18 +43,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    keycloak
-      .init({ onLoad: 'check-sso', silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html' })
-      .then(async (authenticated) => {
+    const init = async () => {
+      try {
+        const authenticated = await keycloak.init({
+          onLoad: 'check-sso',
+          silentCheckSsoFallback: false,
+          checkLoginIframe: false,
+        });
         setIsAuthenticated(authenticated);
         if (authenticated) {
           await exchangeToken();
         }
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error('Keycloak init failed:', err);
-      })
-      .finally(() => setIsLoading(false));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    init();
   }, [exchangeToken]);
 
   const login = useCallback(() => {
