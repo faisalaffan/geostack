@@ -9,6 +9,12 @@ const execFileP = promisify(execFile);
 
 export type ProgressCallback = (step: string, percent: number) => void;
 
+function parseDbUrl(url: string): string {
+  // postgres://user:pass@host:port/dbname → GDAL PG: format
+  const u = new URL(url);
+  return `PG:dbname='${u.pathname.slice(1)}' host='${u.hostname}' port='${u.port || '5432'}' user='${u.username}' password='${u.password}'`;
+}
+
 interface EtlResult {
   featureCount: number;
   storagePath: string;
@@ -58,7 +64,7 @@ export async function runEtl(
     progress('transforming', 50);
     await execFileP('ogr2ogr', [
       '-f', 'PostgreSQL',
-      `PG:${config.DATABASE_URL}`,
+      parseDbUrl(config.DATABASE_URL),
       tmpFile,
       '-nln', `${schema}.layers`,
       '-lco', 'GEOMETRY_NAME=geom',
