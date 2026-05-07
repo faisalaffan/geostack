@@ -32,5 +32,8 @@
     "typescript": "^5.7.0",
     "vitest": "^3.0.0",
     "testcontainers": "^10.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
   }
 }
