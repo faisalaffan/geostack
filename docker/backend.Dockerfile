@@ -8,6 +8,7 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 COPY backend/package.json backend/pnpm-lock.yaml ./
+RUN pnpm config set onlyBuiltDependencies '["esbuild"]' --location project || true
 RUN pnpm install --no-frozen-lockfile
 COPY backend/ .
 EXPOSE 3000
