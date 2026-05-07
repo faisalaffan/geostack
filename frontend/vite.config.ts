@@ -9,11 +9,11 @@ export default defineConfig({
     allowedHosts: ['geostack.faisalaffan.com', '.faisalaffan.com', 'localhost'],
     proxy: {
       // ETL upload → VPS (has GDAL)
-      '/api/upload': {
+      '/api/v1/upload': {
         target: process.env.VITE_ETL_PROXY || 'http://localhost:3009',
         changeOrigin: true,
       },
-      '/api/ws/etl': {
+      '/api/v1/ws/etl': {
         target: process.env.VITE_ETL_PROXY || 'http://localhost:3009',
         changeOrigin: true,
         ws: true,
