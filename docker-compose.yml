@@ -1,0 +1,129 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-geostack}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-geostack_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-geostack}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-geostack}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    ports:
+      - "${MINIO_PORT:-9000}:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      JAVA_OPTS: "-Xms128m -Xmx384m"
+    ports:
+      - "8081:8080"
+    command: start-dev
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    ports:
+      - "${API_PORT:-3000}:3000"
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-geostack}:${POSTGRES_PASSWORD:-geostack_dev}@postgres:5432/${POSTGRES_DB:-geostack}
+      JWT_ISSUER: ${JWT_ISSUER:-http://keycloak:8080/realms/geostack}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-minio}
+      MINIO_PORT: ${MINIO_PORT:-9000}
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      MINIO_BUCKET: ${MINIO_BUCKET:-geostack-data}
+      MARTIN_URL: http://martin:3000
+      TITILER_URL: http://titiler:3002
+      GEOSERVER_URL: http://geoserver:8080
+    volumes:
+      - ./backend/src:/app/src
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:3000
+      VITE_KEYCLOAK_URL: http://localhost:8081
+      VITE_KEYCLOAK_REALM: ${KEYCLOAK_REALM:-geostack}
+      VITE_KEYCLOAK_CLIENT_ID: geostack-web
+    volumes:
+      - ./frontend/src:/app/src
+    depends_on:
+      - api
+
+  martin:
+    image: ghcr.io/maplibre/martin:latest
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-geostack}:${POSTGRES_PASSWORD:-geostack_dev}@postgres:5432/${POSTGRES_DB:-geostack}
+    ports:
+      - "3001:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  titiler:
+    image: ghcr.io/developmentseed/titiler:latest
+    environment:
+      WORKERS_PER_CORE: 1
+      MAX_THREADS: 2
+    ports:
+      - "3002:8080"
+
+  geoserver:
+    image: docker.osgeo.org/geoserver:2.25.2
+    environment:
+      JAVA_OPTS: "-Xms128m -Xmx512m"
+      INSTALL_EXTENSIONS: "true"
+      STABLE_EXTENSIONS: ""
+      EXTRA_LIBS_URL: ""
+    ports:
+      - "8080:8080"
+    volumes:
+      - geoserver_data:/opt/geoserver/data
+
+volumes:
+  pgdata:
+  minio_data:
+  geoserver_data:
