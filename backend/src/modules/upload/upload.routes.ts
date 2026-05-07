@@ -1,5 +1,4 @@
 import { FastifyInstance } from 'fastify';
-import type { WebSocket } from 'ws';
 import { handleUpload } from './upload.service.js';
 import { ValidationError } from '../../lib/errors.js';
 
@@ -14,7 +13,8 @@ export async function uploadRoutes(app: FastifyInstance) {
   // WebSocket endpoint for real-time ETL progress
   app.get('/ws/etl/:datasetId', { websocket: true }, (socket, req) => {
     const { datasetId } = req.params as { datasetId: string };
-    const ws = socket as unknown as WebSocket;
+    // @fastify/websocket v11 SocketStream wraps ws.WebSocket
+    const ws = (socket as any).socket || socket;
 
     const interval = setInterval(() => {
       const progress = progressStore.get(datasetId);
@@ -28,7 +28,7 @@ export async function uploadRoutes(app: FastifyInstance) {
       }
     }, 500);
 
-    ws.addEventListener('close', () => {
+    ws.on('close', () => {
       clearInterval(interval);
     });
   });
