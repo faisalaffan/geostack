@@ -7,8 +7,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
-COPY backend/package.json backend/pnpm-lock.yaml ./
-RUN pnpm config set onlyBuiltDependencies '["esbuild"]' --location project || true
+COPY backend/package.json backend/pnpm-lock.yaml backend/.npmrc ./
 RUN pnpm install --no-frozen-lockfile
 COPY backend/ .
 EXPOSE 3000
