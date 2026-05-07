@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import keycloak from '../lib/keycloak';
 import { setApiToken } from '../lib/api';
 
@@ -20,7 +20,9 @@ interface AuthState {
   logout: () => void;
 }
 
-export function useAuth(): AuthState {
+const AuthContext = createContext<AuthState | null>(null);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<UserInfo | null>(null);
@@ -49,7 +51,9 @@ export function useAuth(): AuthState {
           await exchangeToken();
         }
       })
-      .catch(console.error)
+      .catch((err) => {
+        console.error('Keycloak init failed:', err);
+      })
       .finally(() => setIsLoading(false));
   }, [exchangeToken]);
 
@@ -62,7 +66,18 @@ export function useAuth(): AuthState {
     setIsAuthenticated(false);
     setUser(null);
     setToken(null);
+    setApiToken(null);
   }, []);
 
-  return { isAuthenticated, isLoading, user, token, login, logout };
+  return (
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, user, token, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth(): AuthState {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be inside AuthProvider');
+  return ctx;
 }

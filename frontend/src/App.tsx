@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './hooks/useAuth';
 import { AuthGuard } from './components/shared/AuthGuard';
 import { Layout } from './components/shared/Layout';
 import { Login } from './pages/Login';
