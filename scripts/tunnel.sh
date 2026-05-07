@@ -14,6 +14,7 @@ PORTS=(
   "3001:localhost:3001"   # Martin
   "3002:localhost:3002"   # TiTiler
   "8080:localhost:8080"   # GeoServer
+  "3009:localhost:3000"   # VPS API (for ETL)
 )
 
 echo "🔗 Forwarding VPS services to local..."
@@ -23,6 +24,7 @@ echo "   MinIO       → localhost:9000, :9001"
 echo "   Martin      → localhost:3001"
 echo "   TiTiler     → localhost:3002"
 echo "   GeoServer   → localhost:8080"
+echo "   VPS API     → localhost:3009 (ETL)"
 echo ""
 echo " Keep this terminal open. Ctrl+C to stop."
 
