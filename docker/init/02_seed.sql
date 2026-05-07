@@ -1,5 +1,25 @@
+-- Ensure tables exist (also created by migration, but init runs first)
+CREATE TABLE IF NOT EXISTS organizations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  slug TEXT NOT NULL UNIQUE,
+  keycloak_realm_id TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  keycloak_user_id TEXT NOT NULL UNIQUE,
+  organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+  role TEXT NOT NULL DEFAULT 'viewer' CHECK (role IN ('admin', 'editor', 'viewer')),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 -- public.organizations
-INSERT INTO public.organizations (id, name, slug, keycloak_realm_id)
+INSERT INTO organizations (id, name, slug, keycloak_realm_id)
 VALUES (
   'd290f1ee-6c54-4b01-90e6-d701748f0851',
   'Demo Telecom',
@@ -7,7 +27,7 @@ VALUES (
   'geostack'
 ) ON CONFLICT DO NOTHING;
 
-INSERT INTO public.users (id, keycloak_user_id, organization_id, role)
+INSERT INTO users (id, keycloak_user_id, organization_id, role)
 VALUES (
   'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
   'demo-user-id',
