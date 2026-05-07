@@ -18,7 +18,7 @@ export function MapView() {
     setSelectedFeature,
   } = useMap();
 
-  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+  const API_BASE = import.meta.env.VITE_API_URL || '';
 
   const layerDefs = [
     { id: 'vector', label: 'Vector Tiles (Martin)', visible: layers.vector },
