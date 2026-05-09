@@ -8,3 +8,5 @@ coverage/
 *.local
 tmp/
 data/
+README.md
+docs/superpowers/
