@@ -8,5 +8,5 @@ coverage/
 *.local
 tmp/
 data/
-README.md
+CLAUDE.md
 docs/superpowers/
