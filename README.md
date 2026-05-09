@@ -1,16 +1,14 @@
 # Geostack
 
-Multi-tenant geospatial data platform for telecommunications network planning. Built as a fullstack portfolio project demonstrating cloud-native GIS architecture.
-
-https://github.com/user-attachments/assets/placeholder
+Multi-tenant geospatial data platform for telecommunications network planning.
 
 ## Features
 
-- **Multi-tenant architecture** — Per-organization schema isolation via PostgreSQL, Keycloak realm per tenant, JWT-based auth
-- **Spatial ETL pipeline** — Upload shapefiles/GeoJSON/GeoTIFF, auto-process via GDAL (`ogr2ogr`), load to PostGIS
-- **Vector & raster tile serving** — Martin (vector tiles), TiTiler (COG raster), GeoServer (OGC WMS/WFS/WMTS)
-- **Interactive map viewer** — MapLibre GL JS with layer toggles, feature click popups, dataset attribute tables
-- **Object storage** — MinIO S3-compatible for raw and processed file storage
+- **Multi-tenant isolation** — Per-organization PostgreSQL schema, Keycloak realm, JWT auth
+- **Spatial ETL** — Upload shapefiles/GeoJSON/GeoTIFF, auto-process via GDAL, load to PostGIS
+- **Tile serving** — Vector (Martin), raster (TiTiler), OGC standards (GeoServer)
+- **Interactive map** — MapLibre GL JS with layer toggles, click popups, attribute tables
+- **Object storage** — MinIO S3-compatible
 
 ## Architecture
 
@@ -29,208 +27,44 @@ https://github.com/user-attachments/assets/placeholder
                    :9000
 ```
 
-### Backend Module Boundaries
+## Quick Start
 
-| Module | Responsibility |
-|--------|---------------|
-| `auth` | JWT validation (Keycloak), user/org resolution |
-| `datasets` | CRUD datasets, feature queries, spatial metadata |
-| `upload` | Multipart file upload, ETL orchestration (GDAL → PostGIS) |
-| `tiles` | Auth-protected proxy to Martin/TiTiler/GeoServer |
-| `tenant` | Per-organization PostgreSQL schema isolation |
+```bash
+git clone git@github.com:faisalaffan/geostack.git && cd geostack
+cp .env.example .env
+make setup        # install + start + migrate
+```
 
-### Multi-Tenancy
+Open http://localhost:5173. Dev login available on the frontend.
 
-- `public` schema holds `organizations` and `users` lookup tables
-- Each tenant gets `tenant_<slug>` schema with `datasets`, `layers`, `etl_jobs` tables
-- JWT from Keycloak carries `org_id` and `org_slug` → middleware sets tenant context
-- All SQL queries scoped to tenant schema via `SET search_path`
+Keycloak admin at http://localhost:8081/admin (`admin` / `admin`).
 
 ## Tech Stack
 
 | Category | Technology |
 |----------|-----------|
-| Backend | Node.js 22, TypeScript, Fastify 5 |
-| Frontend | React 19, Vite 6, Tailwind CSS, TanStack Query |
-| Map | MapLibre GL JS 4, react-map-gl 7 |
-| Database | PostgreSQL 16, PostGIS 3.4 |
-| Auth | Keycloak 25 (OAuth2/OIDC) |
-| Tile Services | Martin (Rust), TiTiler (Python), GeoServer (Java) |
+| Backend | Node.js, TypeScript, Fastify |
+| Frontend | React, Vite, Tailwind CSS, MapLibre GL JS |
+| Database | PostgreSQL 16 + PostGIS 3.4 |
+| Auth | Keycloak (OAuth2/OIDC) |
+| Tile Services | Martin, TiTiler, GeoServer |
 | Storage | MinIO (S3-compatible) |
-| ETL | GDAL CLI (`ogrinfo`, `ogr2ogr`) |
-| Infra | Docker Compose, 8 services |
-| Testing | Vitest, React Testing Library |
-
-## Quick Start
-
-### Prerequisites
-
-- Docker Engine 24+
-- 4 GB RAM available
-- Node.js 22 (for local dev without Docker)
-
-### Setup
-
-```bash
-# Clone
-git clone git@github.com:faisalaffan/geostack.git
-cd geostack
-
-# One-command setup (install + start + migrate)
-make setup
-
-# Or step by step
-cp .env.example .env
-make up
-make db-migrate
-```
-
-Open **http://localhost:5173** and login with the dev mode button, or **http://localhost:8081/admin** for Keycloak admin (`admin` / `admin`).
-
-### Makefile Commands
-
-```bash
-make help          # Show all available commands
-
-# Infrastructure
-make up            # Start all 8 services
-make down          # Stop all services
-make logs          # Tail all logs
-make ps            # Show service status
-
-# Database
-make db-migrate    # Run migrations
-make db-reset      # Reset and re-migrate (dev)
-make db-psql       # Open psql console
-
-# Development
-make backend-dev   # Backend dev server
-make frontend-dev  # Frontend dev server
-make test          # Run all tests
-make typecheck     # TypeScript check everything
-make ci            # Full CI check (type + test)
-
-# Docker
-make docker-build  # Build API + Web images
-
-# Kubernetes
-make k8s-apply     # Apply all manifests
-make k8s-delete    # Delete all resources
-make k8s-status    # Show cluster status
-
-# Cleanup
-make clean         # Remove containers, volumes, node_modules
-```
-
-### Demo Credentials
-
-| Platform | URL | Username | Password |
-|----------|-----|----------|----------|
-| Frontend | http://localhost:5173 | — | — |
-| Keycloak Admin | http://localhost:8081/admin | `admin` | `admin` |
-| MinIO Console | http://localhost:9001 | `minioadmin` | `minioadmin` |
-| GeoServer | http://localhost:8080/geoserver | `admin` | `geoserver` |
-
-### Seed Data
-
-Sample Indonesian cell towers and fiber routes are auto-loaded on first start. Navigate to Dashboard → Map Viewer to see them.
+| Infra | Docker Compose (8 services), Kubernetes manifests |
 
 ## Development
 
 ```bash
-# Backend (from backend/)
-pnpm dev                 # Start with hot reload (requires Docker services up)
-pnpm test                # Run tests
-pnpm db:migrate          # Run migrations
-npx tsc --noEmit         # Type check
+make help          # all commands
 
-# Frontend (from frontend/)
-pnpm dev                 # Vite dev server with HMR
-pnpm test                # Run tests
-npx tsc --noEmit         # Type check
+# Backend (backend/)
+pnpm dev           # dev server (needs Docker services up)
+pnpm test
+
+# Frontend (frontend/)
+pnpm dev           # Vite HMR
+pnpm test
 ```
 
-## API Endpoints
+## License
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/health` | Health check |
-| `GET` | `/api/v1/auth/login` | Dev login (returns JWT) |
-| `GET` | `/api/v1/auth/me` | Current user info |
-| `GET` | `/api/v1/datasets` | List datasets (tenant-scoped) |
-| `POST` | `/api/v1/datasets` | Create dataset |
-| `GET` | `/api/v1/datasets/:id` | Dataset detail |
-| `DELETE` | `/api/v1/datasets/:id` | Delete dataset |
-| `GET` | `/api/v1/datasets/:id/features` | Query features (paginated) |
-| `POST` | `/api/v1/upload/:datasetId` | Upload file (multipart) |
-| `WS`  | `/api/v1/ws/etl/:datasetId` | ETL progress stream |
-| `GET` | `/api/v1/tiles/vector/:z/:x/:y` | Vector tile (Martin proxy) |
-| `GET` | `/api/v1/tiles/raster/:z/:x/:y` | Raster tile (TiTiler proxy) |
-| `*` | `/api/v1/geoserver/*` | GeoServer proxy (WMS/WFS) |
-
-## Environment Variables
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `POSTGRES_USER` | `geostack` | PostgreSQL user |
-| `POSTGRES_PASSWORD` | `geostack_dev` | PostgreSQL password |
-| `POSTGRES_DB` | `geostack` | PostgreSQL database |
-| `API_PORT` | `3000` | Backend API port |
-| `JWT_ISSUER` | `http://keycloak:8081/realms/geostack` | JWT issuer URL |
-| `MINIO_ROOT_USER` | `minioadmin` | MinIO access key |
-| `MINIO_ROOT_PASSWORD` | `minioadmin` | MinIO secret key |
-| `MINIO_BUCKET` | `geostack-data` | Default S3 bucket |
-| `KEYCLOAK_ADMIN` | `admin` | Keycloak admin user |
-| `KEYCLOAK_ADMIN_PASSWORD` | `admin` | Keycloak admin password |
-
-## Kubernetes
-
-```bash
-# Apply all manifests
-kubectl apply -k k8s/
-
-# Or apply individually
-kubectl apply -f k8s/namespace.yaml
-kubectl apply -f k8s/
-```
-
-Access via `http://geostack.local` (requires NGINX Ingress Controller + `/etc/hosts` entry).
-
-## CI/CD
-
-GitHub Actions pipeline (`.github/workflows/ci.yml`):
-- **Backend** — Type check + test (with PostGIS service container)
-- **Frontend** — Type check + test
-- **Docker** — Build verification with BuildKit caching
-
-Dependabot configured for weekly updates on npm, Docker, and GitHub Actions.
-
-## Resource Budget (4 GB VPS)
-
-| Service | Est. RAM | Notes |
-|---------|----------|-------|
-| PostgreSQL | 350 MB | `shared_buffers=128MB` |
-| API | 200 MB | Node.js + GDAL |
-| Frontend | 200 MB | Vite dev |
-| Martin | 100 MB | Rust |
-| TiTiler | 250 MB | Python |
-| GeoServer | 500 MB | `-Xmx512m` |
-| Keycloak | 350 MB | `-Xmx384m` |
-| MinIO | 200 MB | Go |
-| **Total** | **~2.15 GB** | 1.85 GB headroom |
-
-## Project Status
-
-- [x] Multi-tenant auth (Keycloak + JWT)
-- [x] Dataset CRUD with spatial metadata
-- [x] File upload & ETL pipeline (GDAL → PostGIS)
-- [x] Real-time ETL progress (WebSocket)
-- [x] Vector tile serving (Martin)
-- [x] Raster tile serving (TiTiler)
-- [x] OGC standards (GeoServer WMS/WFS)
-- [x] Interactive map viewer (MapLibre GL)
-- [x] Backend tests
-- [x] Frontend tests
-- [x] Kubernetes manifests
-- [x] CI/CD pipeline (GitHub Actions)
-- [ ] Live deployment URL
+MIT
