@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="README.id.md">🇮🇩 Bahasa Indonesia</a>
+  <a href="README.md">🇬🇧 English</a>
 </p>
 
 <p align="center">
@@ -12,19 +12,19 @@
 
 # Geostack
 
-Multi-tenant geospatial data platform for telecommunications network planning.
+Platform data geospasial multi-tenant untuk perencanaan jaringan telekomunikasi.
 
-**Live demo:** [geostack.faisalaffan.com](https://geostack.faisalaffan.com) — login with `demo_admin` / `demo123`
+**Demo langsung:** [geostack.faisalaffan.com](https://geostack.faisalaffan.com) — login dengan `demo_admin` / `demo123`
 
-## Features
+## Fitur
 
-- **Multi-tenant isolation** — Per-organization PostgreSQL schema, Keycloak realm, JWT auth
-- **Spatial ETL** — Upload shapefiles/GeoJSON/GeoTIFF, auto-process via GDAL, load to PostGIS
-- **Tile serving** — Vector (Martin), raster (TiTiler), OGC standards (GeoServer)
-- **Interactive map** — MapLibre GL JS with layer toggles, click popups, attribute tables
-- **Object storage** — MinIO S3-compatible
+- **Isolasi multi-tenant** — Skema PostgreSQL per organisasi, realm Keycloak, autentikasi JWT
+- **ETL spasial** — Unggah shapefile/GeoJSON/GeoTIFF, proses otomatis via GDAL, muat ke PostGIS
+- **Tile serving** — Vektor (Martin), raster (TiTiler), standar OGC (GeoServer)
+- **Peta interaktif** — MapLibre GL JS dengan toggle layer, popup klik, tabel atribut
+- **Object storage** — MinIO kompatibel S3
 
-## Architecture
+## Arsitektur
 
 ```
  React (Vite) ──▶ Fastify API ──▶ PostgreSQL/PostGIS
@@ -41,7 +41,7 @@ Multi-tenant geospatial data platform for telecommunications network planning.
                    :9000
 ```
 
-## Quick Start
+## Mulai Cepat
 
 ```bash
 git clone git@github.com:faisalaffan/geostack.git && cd geostack
@@ -49,29 +49,29 @@ cp .env.example .env
 make setup        # install + start + migrate
 ```
 
-Open http://localhost:5173. Dev login available on the frontend.
+Buka http://localhost:5173. Login dev tersedia di frontend.
 
-Keycloak admin at http://localhost:8081/admin (`admin` / `admin`).
+Admin Keycloak di http://localhost:8081/admin (`admin` / `admin`).
 
 ## Tech Stack
 
-| Category | Technology |
+| Kategori | Teknologi |
 |----------|-----------|
 | Backend | Node.js, TypeScript, Fastify |
 | Frontend | React, Vite, Tailwind CSS, MapLibre GL JS |
 | Database | PostgreSQL 16 + PostGIS 3.4 |
 | Auth | Keycloak (OAuth2/OIDC) |
 | Tile Services | Martin, TiTiler, GeoServer |
-| Storage | MinIO (S3-compatible) |
-| Infra | Docker Compose (8 services), Kubernetes manifests |
+| Storage | MinIO (kompatibel S3) |
+| Infra | Docker Compose (8 service), manifes Kubernetes |
 
-## Development
+## Pengembangan
 
 ```bash
-make help          # all commands
+make help          # semua perintah
 
 # Backend (backend/)
-pnpm dev           # dev server (needs Docker services up)
+pnpm dev           # dev server (butuh Docker services menyala)
 pnpm test
 
 # Frontend (frontend/)
@@ -79,6 +79,6 @@ pnpm dev           # Vite HMR
 pnpm test
 ```
 
-## License
+## Lisensi
 
 MIT
