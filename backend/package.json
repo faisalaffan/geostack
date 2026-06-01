@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@fastify/cors": "^10.0.0",
-    "@fastify/http-proxy": "^10.0.0",
+    "@fastify/http-proxy": "^11.4.4",
     "@fastify/jwt": "^9.0.0",
     "@fastify/multipart": "^9.0.0",
     "@fastify/rate-limit": "^10.0.0",
@@ -33,7 +33,7 @@
     "testcontainers": "^10.0.0",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0",
-    "vitest": "^3.0.0"
+    "vitest": "^4.1.0"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
