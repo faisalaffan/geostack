@@ -20,8 +20,23 @@ spec:
           ports:
             - containerPort: 3000
           env:
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: geostack-config
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: geostack-secrets
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: geostack-config
+                  key: POSTGRES_DB
             - name: DATABASE_URL
-              value: "postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@postgres:5432/$(POSTGRES_DB)"
+              value: "postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@postgres.infra:5432/$(POSTGRES_DB)"
             - name: JWT_ISSUER
               valueFrom:
                 configMapKeyRef:
@@ -72,21 +87,6 @@ spec:
                 secretKeyRef:
                   name: geostack-secrets
                   key: JWT_SECRET
-            - name: POSTGRES_USER
-              valueFrom:
-                configMapKeyRef:
-                  name: geostack-config
-                  key: POSTGRES_USER
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: geostack-secrets
-                  key: POSTGRES_PASSWORD
-            - name: POSTGRES_DB
-              valueFrom:
-                configMapKeyRef:
-                  name: geostack-config
-                  key: POSTGRES_DB
           resources:
             requests:
               memory: "128Mi"

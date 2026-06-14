@@ -4,12 +4,11 @@ metadata:
   name: geostack-ingress
   namespace: geostack
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/proxy-body-size: "100m"
 spec:
   ingressClassName: nginx
   rules:
-    - host: geostack.local
+    - host: geostack.faisalaffan.com
       http:
         paths:
           - path: /
@@ -31,5 +30,15 @@ spec:
             backend:
               service:
                 name: geoserver
+                port:
+                  number: 8080
+    - host: keycloak.faisalaffan.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: keycloak
                 port:
                   number: 8080
